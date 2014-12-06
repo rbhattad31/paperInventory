@@ -10,8 +10,9 @@ class InvoiceController extends Controller
 	public function actionInvoiceNumber($invoiceNumber)
 	{
 		$sales = EbrSales::model()->getSalesByInvoice($invoiceNumber);
-		
+		$model = new EbrSales();
 		$this->render('invoiceNumber',array(
+				'model'=>$model,
 				'invoice'=>$invoiceNumber,
 				'sales'=>$sales,
 				));
@@ -20,6 +21,7 @@ class InvoiceController extends Controller
 	public function actionSearch()
 	{
 		$invoice = '';
+		$model = new EbrSales();
 		$sales = array();
 		if(isset($_POST['invoice']))
 		{
@@ -27,6 +29,7 @@ class InvoiceController extends Controller
 		$sales = EbrSales::model()->getSalesByInvoice($invoice);
 		}
 		$this->render('search',array(
+				'model'=>$model,
 				'invoice'=>$invoice,
 				'sales'=>$sales,
 				
@@ -34,8 +37,10 @@ class InvoiceController extends Controller
 	}
 	
 	public function actionPrint($invoice){
+		$model = new EbrSales();
 		$sales = EbrSales::model()->getSalesByInvoice($invoice);
 		$this->renderPartial('print',array(
+				'model'=>$model,
 				'invoice'=>$invoice,
 				'sales'=>$sales,
 		

@@ -95,12 +95,12 @@ class EbrPurchase extends CActiveRecord
 			'updated_date' => 'Updated Date',
 			'updated_by' => 'Updated By',
 			'purchase_amount' => 'Purchase Amount',
-			'invoice_number' => 'Invoice Number',
+			'invoice_number' => 'Purchase Invoice Number',
 			'vendor_id' => 'Vendor',
 			'purchase_deleted' => 'Purchase Deleted',
 			'invoice_date' => 'Invoice Date',
-			'quantity' => 'Quantity',
-			'unit_price' => 'Price Per Unit',
+			'quantity' => 'Purchase Quantity',
+			'unit_price' => 'Purchase Price Per Unit',
 		);
 	}
 
@@ -160,6 +160,15 @@ class EbrPurchase extends CActiveRecord
 		}
 		else
 			return false;
+	}
+	
+	public function getPurchaseByInvoice($invoice){
+		return $this->findAllByAttributes(
+				array(
+						'purchase_deleted'=>array('N'),
+						'invoice_number'=>$invoice,
+				));
+	
 	}
 	
 }

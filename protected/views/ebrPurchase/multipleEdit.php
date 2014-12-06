@@ -1,26 +1,30 @@
 <?php
-/* @var $this EbrSalesController */
-/* @var $model EbrSales */
+/* @var $this EbrPurchaseController */
+/* @var $model EbrPurchase */
 
 $this->breadcrumbs=array(
-	'Ebr Sales'=>array('index'),
-	'Create',
+	'Ebr Purchases'=>array('index'),
+	$model->purchase_id=>array('view','id'=>$model->purchase_id),
+	'Update',
 );
 
 $this->menu=array(
-	array('label'=>'List EbrSales', 'url'=>array('index')),
-	array('label'=>'Manage EbrSales', 'url'=>array('admin')),
+	array('label'=>'List EbrPurchase', 'url'=>array('index')),
+	array('label'=>'Create EbrPurchase', 'url'=>array('multipleCreate')),
+	array('label'=>'View EbrPurchase', 'url'=>array('view', 'id'=>$model->purchase_id)),
+	array('label'=>'Manage EbrPurchase', 'url'=>array('admin')),
 );
 ?>
+
 
 <div class="form">
 
 <?php $form=$this->beginWidget('CActiveForm', array(
-	'id'=>'ebr-sales-form',
+	'id'=>'ebr-purchase-form',
 	'enableAjaxValidation'=>false,
 ));
 Yii::app()->clientScript->registerScript('create', "
-$('#EbrSales_0_group_id').change(function(){
+$('#EbrPurchase_0_group_id').change(function(){
 		var group= this.value;
 		var url = $('#appURL').val();
 		$.ajax({
@@ -31,8 +35,8 @@ $('#EbrSales_0_group_id').change(function(){
 
                            success: function(data1)
                                {
-		 $('#EbrSales_0_shop_id').empty();
-		 var select = document.getElementById('EbrSales_0_shop_id');
+		 $('#EbrPurchase_0_shop_id').empty();
+		 var select = document.getElementById('EbrPurchase_0_shop_id');
 		              var opt = document.createElement('option');
 					    opt.value = '';
 					    opt.text = 'Select a Shop';
@@ -60,6 +64,7 @@ $('.delete').click(function() {
 	}
 	return false;
 });
+		
 $('.unitPrice').change(function() {
 	var qu1 = $(this);
 	var res = qu1.attr('id').split('unitPrice');
@@ -118,141 +123,113 @@ $('#create').click(function() {
 
 ?>
 <?php echo CHtml::beginForm(); ?>
-<?php if(Yii::app()->user->hasFlash('printInvoice')): ?>
- 
-<div class="flash-success">
-    <?php echo Yii::app()->user->getFlash('printInvoice'); ?>
-</div>
- 
-<?php endif; ?>
-
-<input type="hidden" id="appURL"  value="<?php echo $this->createUrl('site/shops')?>"/>
 <table>
 <tbody>
 <tr>
 <td>
 <div class="row">
 		<?php echo $form->labelEx($items[0],'group_id'); ?>
-		
 		<?php echo $form->dropDownList($items[0],"[0]group_id",Utilities::getGroupsList(),array('empty' => 'Select a group')); ?>
 		<?php echo $form->error($items[0],'group_id'); ?>
 	</div>
+
 </td>
 <td>
 <div class="row">
 		<?php echo $form->labelEx($items[0],'shop_id'); ?>
 		<?php echo $form->dropDownList($items[0],'[0]shop_id',$allShops,array('empty' => 'Select a shop')); ?>
 		<?php echo $form->error($items[0],'shop_id'); ?>
-</div>
+	</div>
 
 </td>
 </tr>
 <tr>
 <td>
-<div class="row">
-<?php echo $form->labelEx($items[0],'invoice_number'); ?>
+	<div class="row">
+		<?php echo $form->labelEx($items[0],'invoice_number'); ?>
 		<?php echo $form->textField($items[0],'[0]invoice_number',array(
         'disabled'=>'true'
     )); ?>
-		
-</div>
+		<?php echo $form->error($items[0],'invoice_number'); ?>
+	</div>
 
 </td>
 <td>
 <div class="row">
-		<?php echo $form->labelEx($model,'sales_date'); ?>
+		<?php echo $form->labelEx($items[0],'invoice_date'); ?>
 		<?php $this->widget('zii.widgets.jui.CJuiDatePicker',array(
     'model' => $items[0],
-	'attribute' => '[0]sales_date',
-    // additional javascript options for the date picker plugin
+	'attribute' => '[0]invoice_date',
+	// additional javascript options for the date picker plugin
     'options'=>array(
         'showAnim'=>'fold',
-		'showOn' => 'both',             // also opens with a button
-		'dateFormat' => 'yy-mm-dd',     // format of "2012-12-25"
-		'showOtherMonths' => true,      // show dates in other months
-		'selectOtherMonths' => true,    // can seelect dates in other months
-		'changeYear' => true,           // can change year
-		'changeMonth' => true,          // can change month
-		'yearRange' => '2000:2099',     // range of year
-		'minDate' => '2000-01-01',      // minimum date
-		'maxDate' => '2099-12-31',      // maximum date
-		'showButtonPanel' => true,
+'showOn' => 'both',             // also opens with a button
+'dateFormat' => 'yy-mm-dd',     // format of "2012-12-25"
+'showOtherMonths' => true,      // show dates in other months
+'selectOtherMonths' => true,    // can seelect dates in other months
+'changeYear' => true,           // can change year
+'changeMonth' => true,          // can change month
+'yearRange' => '2000:2099',     // range of year
+'minDate' => '2000-01-01',      // minimum date
+'maxDate' => '2099-12-31',      // maximum date
+'showButtonPanel' => true,
     ),
     'htmlOptions'=>array(
         'style'=>'height:20px;'
     ),
-)); 
-		 ?>
-		<?php echo $form->error($items[0],'sales_date'); ?>
-	</div>
-
-</td>
-</tr>
-<tr>
-<td>
-<div class="row">
-		<?php echo $form->labelEx($model,'client_id'); ?>
-		<?php $this->widget('zii.widgets.jui.CJuiAutoComplete', array(
-		'model' => $items[0],
-		'attribute' => '[0]client_id',
-		'source'=>$this->createUrl('site/suggestClients'),
-		'options'=>array(
-				'showAnim'=>'fold',
-		),
 )); ?>
-		<?php echo $form->error($items[0],'client_id'); ?>
+		<?php echo $form->error($items[0],'invoice_date'); ?>
 	</div>
 
 </td>
 </tr>
-
 <tr>
-<td>
-<?php echo CHtml::submitButton('Add Rows',array('id'=>'add')); ?>&nbsp;<input type="text" name="rows">
-</td>
-
+<td><?php echo CHtml::submitButton('Add Rows',array('id'=>'add')); ?>&nbsp;<input type="text" name="rows"></td>
 </tr>
+
 </tbody>
+
 </table>
 	<input type="hidden" id="appURL"  value="<?php echo $this->createUrl('site/shops')?>"/>
 	<input type="hidden" id="deletedRows" name="deletedRows" value="">
 	<input type="hidden" id="formSubmit" name="formSubmit">
-
+	
 <table>
 <tr>
 <th><?php echo $form->labelEx($model,'product_id'); ?></th>
 <th><?php echo $form->labelEx($model,'unit_price'); ?></th>
 <th><?php echo $form->labelEx($model,'quantity'); ?></th>
 <th></th>
-<th><?php echo $form->labelEx($model,'sale_amount'); ?></th>
+<th><?php echo $form->labelEx($model,'purchase_amount'); ?></th>
+
+
 </tr>
 <?php foreach($items as $i=>$item): ?>
 <tr class="row">
-<td><?php 
-
-$this->widget('zii.widgets.jui.CJuiAutoComplete', array(
+<td>
+<?php echo CHtml::activeHiddenField($item,"[$i]purchase_id"); ?>
+<?php 
+		$this->widget('zii.widgets.jui.CJuiAutoComplete', array(
 		'model' => $item,
 		'attribute' => "[$i]product_id",
 		'source'=>$this->createUrl('site/suggestProductsAndVendors'),
 		'options'=>array(
 				'showAnim'=>'fold',
-				'change' => new CJavaScriptExpression('function(e, ui) {
-				var res = this.id.split("product");
-				document.getElementById(res[0]+"unitPrice").value = ui.item.sales_price;
-			 document.getElementById(res[0]+"units").innerHTML = ui.item.units;
-			document.getElementById(res[0]+"quantity").value = null;
-			document.getElementById(res[0]+"amount").value = null;
-			
-						}')
-						),
-						'htmlOptions'=>array(
-								'id'=>$i.'product',
-						),
+				
+				'change' => new CJavaScriptExpression('function(e, ui) { 
+															var res = this.id.split("product"); 
+															document.getElementById(res[0]+"unitPrice").value = ui.item.units_price;
+														 document.getElementById(res[0]+"units").innerHTML = ui.item.units;
+																	}')
+		),
+		'htmlOptions'=>array(
+       'id'=>$i.'product',
+    ),
 ));
- ?> 
- <?php echo $form->error($item,'product_id'); ?>
- </td>
- <td>
+		 ?>
+		<?php echo $form->error($item,'product_id'); ?>
+</td>
+<td>
 <?php echo CHtml::activeTextField($item,"[$i]unit_price",array('id'=>$i.'unitPrice',
 															'class'=>'unitPrice')); ?>
 <?php echo $form->error($item,'unit_price'); ?>
@@ -269,16 +246,12 @@ $this->widget('zii.widgets.jui.CJuiAutoComplete', array(
 <td id="<?php echo $i.'units'?>">
 
 </td>
- 
 <td>
-<?php echo CHtml::activeTextField($item,"[$i]sale_amount",array('id'=>$i.'amount',
+<?php echo CHtml::activeTextField($item,"[$i]purchase_amount",array('id'=>$i.'amount',
 															'class'=>'amount')); ?>
-<?php echo $form->error($item,"sale_amount"); ?>
+<?php echo $form->error($item,'purchase_amount'); ?>
 </td>
-<td>
-<?php echo CHtml::link('Delete',array('comment/delete','id'=>$i),array('class'=>'delete',
-																		'id'=>$i)); ?> 
-</td>
+
 
 </tr>
 <?php endforeach; ?>

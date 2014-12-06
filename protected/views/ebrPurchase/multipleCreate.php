@@ -1,4 +1,18 @@
+<?php
+/* @var $this EbrPurchaseController */
+/* @var $model EbrPurchase */
 
+$this->breadcrumbs=array(
+	'Purchases'=>array('index'),
+	'Create',
+);
+
+$this->menu=array(
+	array('label'=>'List Purchase', 'url'=>array('index')),
+	array('label'=>'Manage Purchase', 'url'=>array('admin')),
+);
+
+?>
 
 <div class="form">
 

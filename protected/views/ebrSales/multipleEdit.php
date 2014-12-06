@@ -1,4 +1,20 @@
+<?php
+/* @var $this EbrSalesController */
+/* @var $model EbrSales */
 
+$this->breadcrumbs=array(
+	'Ebr Sales'=>array('index'),
+	$model->sale_id=>array('view','id'=>$model->sale_id),
+	'Update',
+);
+
+$this->menu=array(
+	array('label'=>'List EbrSales', 'url'=>array('index')),
+	array('label'=>'Create EbrSales', 'url'=>array('multipleCreate')),
+	array('label'=>'View EbrSales', 'url'=>array('view', 'id'=>$model->sale_id)),
+	array('label'=>'Manage EbrSales', 'url'=>array('admin')),
+);
+?>
 
 <?php if(count($items) > 0){?>
 

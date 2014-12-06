@@ -51,8 +51,13 @@ class EbrPurchaseController extends Controller
 	 */
 	public function actionView($id)
 	{
+		$model = $this->loadModel($id);
+		$invoice = $model->invoice_number;
+		$models = EbrPurchase::model()->getPurchaseByInvoice($invoice);
+		
 		$this->render('view',array(
-			'model'=>$this->loadModel($id),
+			'model'=>$model,
+			'purchases'=>$models,
 		));
 	}
 	
@@ -182,36 +187,130 @@ class EbrPurchaseController extends Controller
 	public function actionUpdate($id)
 	{
 		$model=$this->loadModel($id);
-
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
-		$model->product_id = $model->product->product_name.','.$model->vendor->vendor_name;
+		$invoice = $model->invoice_number;
+		$models = EbrPurchase::model()->getPurchaseByInvoice($invoice);
+		$updatedModels = array();
+		$allShops = Utilities::getShopsListForGroup($models[0]->group_id);
+		//$invoicenumber = $models[0]->invoice_number;
+		foreach($models as $j=>$purchase){
+			$previousQuantity[$j] = $purchase->quantity;
+			$previoudProduct[$j] = $purchase->product_id;
+			$previousVendor[$j] = $purchase->vendor_id;
+			$previousShop[$j] = $purchase->shop_id;
+			$product = EbrProducts::model()->findByPk($purchase->product_id)->product_name;
+			$vendor = EbrVendor::model()->findByPk($purchase->vendor_id)->vendor_name;
+			$models[$j]->product_id = $product.','.$vendor;
+		}
+		
 		if(isset($_POST['EbrPurchase']))
 		{
-			$model->attributes=$_POST['EbrPurchase'];
-			$allShops = Utilities::getShopsListForGroup($model->group_id);
-			$str = array();
-				
-			if(!empty($_POST['EbrPurchase']['product_id'])){
-				$str = explode(',', $_POST['EbrPurchase']['product_id']);
-			}
-			$product = $str[0];
-			$vendor = $str[1];
-			$model->vendor_id= Utilities::getVendorId($vendor);
-			$model->product_id=Utilities::getProductId($product);
-			if($model->save()){
-				//EbrStock::model()->updateStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity);
-				$this->redirect(array('view','id'=>$model->purchase_id));
-			}
-		}else{
-		$allShops = Utilities::getShopsListForGroup($model->group_id);
-		}
+			if(isset($_POST['rows']) &&  !empty($_POST['rows']) && empty($_POST['formSubmit'])){
+				$rowsAdd =$_POST['rows'];
+				$i=count($_POST['EbrPurchase']);
+				$total = $i+$rowsAdd;
+				while($i<$total){
+					$models[$i+1]=new EbrPurchase;
+					$models[$i+1]->invoice_number = $invoice;
+					$i++;
+				}
+					
+			}else if(isset($_POST['rows']) && !empty($_POST['formSubmit']) ){
+				$valid=true;
+				$group = $_POST['EbrPurchase'][0]['group_id'];
+				$shop = $_POST['EbrPurchase'][0]['shop_id'];
 			
-		$this->render('update',array(
-			'model'=>$model,
-				'allShops'=>$allShops,
-				
+				$date = $_POST['EbrPurchase'][0]['invoice_date'];
+				$i=0;
+				foreach ($_POST['EbrPurchase'] as $j=>$sale) {
+					if (isset($_POST['EbrPurchase'][$j])) {
+						$updatedModels[$j]=$this->loadModel($_POST['EbrPurchase'][$j]['purchase_id']);; // if you had static model only
+						$updatedModels[$j]->attributes=$sale;
+						$str = array();
+						$productEntered[$j] = $updatedModels[$j]->product_id;
+						if(isset($models[$j]->product_id)){
+							$str = explode(',',$updatedModels[$j]->product_id);
+						}
+						if(isset($str[0]))
+							$product = $str[0];
+						if(isset($str[1]))
+							$vendor = $str[1];
+						if(isset($vendor))
+							$updatedModels[$j]->vendor_id= Utilities::getVendorId($vendor);
+						if(isset($product))
+							$updatedModels[$j]->product_id=Utilities::getProductId($product);
+						$updatedModels[$j]->invoice_number = $invoice;
+						$updatedModels[$j]->group_id=$group;
+						$updatedModels[$j]->shop_id=$shop;
+						$updatedModels[$j]->invoice_date=$date;
+						$valid=$updatedModels[$j]->validate() && $valid;
+						if($valid){
+							$validModel[$i]=$updatedModels[$j];
+							$i++;
+						}
+					}
+				}
+				if ($valid) {
+					$i=0;
+					$j=count($validModel);
+					while ($i<$j) {
+						$validModel[$i]->save(false);// models have already been validated
+						if($previoudProduct[$i] == $updatedModels[$i]->product_id && $previousShop[$i] == $updatedModels[$i]->shop_id && $previousVendor[$i] == $updatedModels[$i]->vendor_id){
+							EbrStock::model()->checkAndUpdateStockQuantity($validModel[$i]->product_id, $validModel[$i]->shop_id, $validModel[$i]->vendor_id, $validModel[$i]->quantity,$previousQuantity[$i]);
+							//$valid =  EbrStock::model()->checkAndUpdateStockQuantity($updatedModels[$j]->product_id, $updatedModels[$j]->shop_id, $updatedModels[$j]->vendor_id, $updatedModels[$j]->quantity,$previousQuantity[$j]);
+						}else{
+							 EbrStock::model()->checkAndLessStockQuantity($previoudProduct[$i], $previousShop[$i], $previousVendor[$i], $previousQuantity[$i]);
+							 EbrStock::model()->addStock($validModel[$i]->product_id, $validModel[$i]->shop_id, $validModel[$i]->vendor_id, $validModel[$i]->quantity);
+						}
+						$i++;
+					}
+					Yii::app()->user->setFlash('purchaseSuccess','Purchases edited succesfully.');
+					//$this->redirect(array('view','id'=>$model->purchase_id));
+					$this->redirect(array('ebrPurchase/admin'));
+				}else{
+					foreach ($_POST['EbrPurchase'] as $j=>$sale) {
+						if (isset($_POST['EbrPurchase'][$j])) {
+							$updatedModels[$j]->product_id = $productEntered[$j];
+						}
+					}
+				}
+				$models = $updatedModels;
+			}
+		
+		}
+		$this->render('multipleEdit',array('items'=>$models,
+				'invoice'=>$invoice,
+				'model'=>$model,
+				'allShops'=>$allShops
 		));
+		// Uncomment the following line if AJAX validation is needed
+		// $this->performAjaxValidation($model);
+// 		$model->product_id = $model->product->product_name.','.$model->vendor->vendor_name;
+// 		if(isset($_POST['EbrPurchase']))
+// 		{
+// 			$model->attributes=$_POST['EbrPurchase'];
+// 			$allShops = Utilities::getShopsListForGroup($model->group_id);
+// 			$str = array();
+				
+// 			if(!empty($_POST['EbrPurchase']['product_id'])){
+// 				$str = explode(',', $_POST['EbrPurchase']['product_id']);
+// 			}
+// 			$product = $str[0];
+// 			$vendor = $str[1];
+// 			$model->vendor_id= Utilities::getVendorId($vendor);
+// 			$model->product_id=Utilities::getProductId($product);
+// 			if($model->save()){
+// 				//EbrStock::model()->updateStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity);
+// 				$this->redirect(array('view','id'=>$model->purchase_id));
+// 			}
+// 		}else{
+// 		$allShops = Utilities::getShopsListForGroup($model->group_id);
+// 		}
+			
+// 		$this->render('update',array(
+// 			'model'=>$model,
+// 				'allShops'=>$allShops,
+				
+// 		));
 	}
 
 	/**

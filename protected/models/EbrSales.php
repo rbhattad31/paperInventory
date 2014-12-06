@@ -60,7 +60,7 @@ class EbrSales extends CActiveRecord
 			array('group_id, shop_id, product_id, quantity, client_id, invoice_number', 'numerical', 'integerOnly'=>true),
 			array('created_date, created_by, updated_date, updated_by, sales_date', 'length', 'max'=>100),
 			array('sales_deleted', 'length', 'max'=>1),
-				array('sale_amount,unit_price', 'type', 'type'=>'float'),
+			array('sale_amount,unit_price', 'type', 'type'=>'float'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
 			array('sale_id, group_id, shop_id, product_id, created_date, created_by, updated_date, updated_by, sale_amount, sales_deleted, sales_date, quantity, client_id, invoice_number', 'safe', 'on'=>'search'),
