@@ -117,6 +117,7 @@
          
          <li><a href='<?php echo $this->createUrl('ebrSales/multipleCreate')?>'><span>Create Sales</span></a></li>
          <li><a href='<?php echo $this->createUrl('ebrSales/index')?>'><span>View Sales</span></a></li>
+          <li><a href='<?php echo $this->createUrl('ebrSales/edit')?>'><span>Edit Sales</span></a></li>
          <li class='last'><a href='<?php echo $this->createUrl('ebrSales/admin')?>'><span>Search Sales</span></a></li>
       </ul>
    </li>

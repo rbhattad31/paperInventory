@@ -200,7 +200,7 @@ $('#create').click(function() {
 
 </tr>
 </tbody>
-
+</table>
 	<input type="hidden" id="appURL"  value="<?php echo $this->createUrl('site/shops')?>"/>
 	<input type="hidden" id="deletedRows" name="deletedRows" value="">
 	<input type="hidden" id="formSubmit" name="formSubmit">
@@ -225,8 +225,11 @@ $this->widget('zii.widgets.jui.CJuiAutoComplete', array(
 				'showAnim'=>'fold',
 				'change' => new CJavaScriptExpression('function(e, ui) {
 				var res = this.id.split("product");
-				document.getElementById(res[0]+"unitPrice").value = ui.item.units_price;
+				document.getElementById(res[0]+"unitPrice").value = ui.item.sales_price;
 			 document.getElementById(res[0]+"units").innerHTML = ui.item.units;
+			document.getElementById(res[0]+"quantity").value = null;
+			document.getElementById(res[0]+"amount").value = null;
+			
 						}')
 						),
 						'htmlOptions'=>array(

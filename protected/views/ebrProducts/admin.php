@@ -49,6 +49,8 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 		'product_name',
 		'vendor_id',
 		'product_description',
+		'unit_price',
+		'sale_price',
 		/*'created_date',
 		'created_by',
 		

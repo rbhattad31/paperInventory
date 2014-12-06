@@ -44,6 +44,13 @@
 		<?php echo $form->textField($model,'unit_price',array('size'=>10,'maxlength'=>200)); ?>
 		<?php echo $form->error($model,'unit_price'); ?>
 	</div>
+	<div class="row">
+		<?php echo $form->labelEx($model,'sale_price'); ?>
+		<?php echo $form->textField($model,'sale_price',array('size'=>10,'maxlength'=>200)); ?>
+		<?php echo $form->error($model,'sale_price'); ?>
+	</div>
+	
+	
 	
 	<div class="row buttons">
 		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save'); ?>

@@ -37,6 +37,13 @@
 		'source'=>$this->createUrl('site/suggestProductsAndVendors'),
 		'options'=>array(
 				'showAnim'=>'fold',
+	'change' => new CJavaScriptExpression('function(e, ui) {
+				document.getElementById("unitPrice").value = ui.item.sales_price;
+			 document.getElementById("units").innerHTML = ui.item.units;
+			document.getElementById("quantity").value = null;
+			document.getElementById("amount").value = null;
+			
+						}')
 		),
 ));
 	?>
@@ -45,14 +52,20 @@
 
 	<div class="row">
 		<?php echo $form->labelEx($model,'quantity'); ?>
-		<?php echo $form->textField($model,'quantity'); ?>
+		<?php echo $form->textField($model,'quantity',array('id' => 'quantity')); ?><div id="units"></div>
 		<?php echo $form->error($model,'quantity'); ?>
+	</div>
+	
+	<div class="row">
+		<?php echo $form->labelEx($model,'unit_price'); ?>
+		<?php echo $form->textField($model,'unit_price',array('id' => 'unitPrice')); ?>
+		<?php echo $form->error($model,'unit_price'); ?>
 	</div>
 	
 	
 	<div class="row">
 		<?php echo $form->labelEx($model,'sale_amount'); ?>
-		<?php echo $form->textField($model,'sale_amount'); ?>
+		<?php echo $form->textField($model,'sale_amount',array('id' => 'amount')); ?>
 		<?php echo $form->error($model,'sale_amount'); ?>
 	</div>
 

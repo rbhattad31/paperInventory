@@ -28,5 +28,10 @@
 	<b><?php echo CHtml::encode($data->getAttributeLabel('unit_price')); ?>:</b>
 	<?php echo CHtml::encode($data->unit_price); ?>
 	<br />
+
+		<b><?php echo CHtml::encode($data->getAttributeLabel('sale_price')); ?>:</b>
+	<?php echo CHtml::encode($data->sale_price); ?>
+	<br />
+	
 	
 </div>

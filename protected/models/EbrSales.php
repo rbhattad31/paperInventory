@@ -104,7 +104,7 @@ class EbrSales extends CActiveRecord
 			'client_id' => 'Client',
 			'invoice_number' => 'Invoice Number',
 			'vendor_id' => 'Vendor',
-				'unit_price' => 'Unit Price',
+			'unit_price' => 'Slaes Price Per Unit',
 		);
 	}
 

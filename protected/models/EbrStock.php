@@ -169,6 +169,29 @@ class EbrStock extends CActiveRecord
 		}
 	}
 	
+	public function addStockandLessSale($productId,$shopId,$vendorId,$quantity){
+		$stock1 = $this->findAllByAttributes(array (
+				'product_id'=>$productId,
+				'vendor_id'=>$vendorId,
+				'shop_id'=>$shopId
+		));
+		if(isset($stock1[0])){
+			$stock1[0]->available_quantity = $quantity + $stock1[0]->available_quantity;
+			$stock1[0]->total_sale = $stock1[0]->total_sale - $quantity;
+			$stock1[0]->save();
+		}else{
+			$stock = new EbrStock;
+			$stock->product_id = $productId;
+			$stock->shop_id = $shopId;
+			$stock->vendor_id = $vendorId;
+			$stock->year = '2014';
+			$stock->total_sale = '0';
+			$stock->available_quantity = $quantity;
+			$stock->save();
+	
+		}
+	}
+	
 	public function checkAndLessStock($productId,$shopId,$vendorId,$quantity){
 		$stock1 = $this->findAllByAttributes(array (
 				'product_id'=>$productId,
@@ -189,6 +212,38 @@ class EbrStock extends CActiveRecord
 		}
 	}
 	
+	public function checkAndUpdateStock($productId,$shopId,$vendorId,$newQuantity,$previousQuantity){
+		$stock1 = $this->findAllByAttributes(array (
+				'product_id'=>$productId,
+				'vendor_id'=>$vendorId,
+				'shop_id'=>$shopId
+		));
+		if(isset($stock1[0])){
+			if($previousQuantity > $newQuantity){
+				$updateQuantity = $previousQuantity -$newQuantity;
+			}else{
+				$updateQuantity = $newQuantity - $previousQuantity;
+			}
+			 
+			if($stock1[0]->available_quantity > $updateQuantity){
+				if($previousQuantity > $newQuantity){
+				$stock1[0]->available_quantity =  $stock1[0]->available_quantity + $updateQuantity;
+				$stock1[0]->total_sale =  $stock1[0]->total_sale - $updateQuantity;
+				}else{
+					$stock1[0]->available_quantity =  $stock1[0]->available_quantity - $updateQuantity;
+					$stock1[0]->total_sale =  $stock1[0]->total_sale + $updateQuantity;
+				}
+				
+				$stock1[0]->save();
+				return 'success';
+			}else{
+				return 'quantityFail';
+			}
+		}else{
+			return 'quantityFail';
+		}
+	}
+	
 	public function deleteStock($productId,$shopId,$vendorId,$quantity){
 		$stock1 = $this->findAllByAttributes(array (
 				'product_id'=>$productId,
@@ -197,6 +252,23 @@ class EbrStock extends CActiveRecord
 		));
 		if(isset($stock1[0])){
 			$stock1[0]->available_quantity =  $stock1[0]->available_quantity - $quantity;
+			$stock1[0]->save();
+			return 'true';
+		}else{
+			return 'false';
+		}
+	}
+	
+	public function addDeletedStock($productId,$shopId,$vendorId,$quantity){
+		$stock1 = $this->findAllByAttributes(array (
+				'product_id'=>$productId,
+				'vendor_id'=>$vendorId,
+				'shop_id'=>$shopId
+		));
+		if(isset($stock1[0])){
+			
+			$stock1[0]->available_quantity =  $stock1[0]->available_quantity + $quantity;
+			$stock1[0]->total_sale =  $stock1[0]->total_sale - $quantity;
 			$stock1[0]->save();
 			return 'true';
 		}else{

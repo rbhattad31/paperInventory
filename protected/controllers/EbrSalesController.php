@@ -32,7 +32,7 @@ class EbrSalesController extends Controller
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update','multipleCreate'),
+				'actions'=>array('create','update','multipleCreate','multipleEdit','edit'),
 				'roles'=>array('admin','general'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -63,7 +63,7 @@ class EbrSalesController extends Controller
 	public function actionCreate()
 	{
 		$model=new EbrSales;
-
+		$invoicenumber = $model->getInvoiceNumber();
 		
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -71,6 +71,7 @@ class EbrSalesController extends Controller
 		if(isset($_POST['EbrSales']))
 		{
 			$model->attributes=$_POST['EbrSales'];
+			$model->invoice_number = $invoicenumber;
 			$allShops = Utilities::getShopsListForGroup($model->group_id);
 			$str = array();
 				
@@ -87,7 +88,7 @@ class EbrSalesController extends Controller
 				$valid =  EbrStock::model()->checkAndLessStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity);
 				if($valid == 'quantityFail'){
 					//$model->addErrors('Invalid Quantity');
-					$model->addError('quantity', 'Invalid Quantity');
+					$model->addError('quantity', 'Quantity not available.');
 				}else{
 					$model->save(false);
 					$this->redirect(array('view','id'=>$model->sale_id));
@@ -110,20 +111,165 @@ class EbrSalesController extends Controller
 	public function actionUpdate($id)
 	{
 		$model=$this->loadModel($id);
-
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
-
+		$invoice = $model->invoice_number;
+		$models = EbrSales::model()->getSalesByInvoice($model->invoice_number);
+		$updatedModels = array();
+		$allShops = Utilities::getShopsListForGroup($models[0]->group_id);
+		//$invoicenumber = $models[0]->invoice_number;
+		foreach($models as $j=>$sale){
+			$previousQuantity[$j] = $sale->quantity;
+			$previoudProduct[$j] = $sale->product_id;
+			$previousVendor[$j] = $sale->vendor_id;
+			$previousShop[$j] = $sale->shop_id;
+			$product = EbrProducts::model()->findByPk($sale->product_id)->product_name;
+			$vendor = EbrVendor::model()->findByPk($sale->vendor_id)->vendor_name;
+			$models[$j]->client_id = EbrClient::model()->findByPk($sale->client_id)->client_name;
+			$models[$j]->product_id = $product.','.$vendor;
+		}
+		
 		if(isset($_POST['EbrSales']))
 		{
-			$model->attributes=$_POST['EbrSales'];
-			if($model->save())
-				$this->redirect(array('view','id'=>$model->sale_id));
+			if(isset($_POST['rows']) &&  !empty($_POST['rows']) && empty($_POST['formSubmit'])){
+				$rowsAdd =$_POST['rows'];
+				$i=count($_POST['EbrSales']);
+				$total = $i+$rowsAdd;
+				while($i<$total){
+					$models[$i+1]=new EbrSales;
+					$models[$i+1]->invoice_number = $invoice;
+					$i++;
+				}
+			
+			}else if(isset($_POST['rows']) && !empty($_POST['formSubmit']) ){
+				$valid=true;
+				$valid2=true;
+				$valid3 = true;
+				$group = $_POST['EbrSales'][0]['group_id'];
+				$shop = $_POST['EbrSales'][0]['shop_id'];
+				$client = '';
+				if($_POST['EbrSales'][0]['client_id'])
+					$client=Utilities::getClient($_POST['EbrSales'][0]['client_id']);
+				
+				$date = $_POST['EbrSales'][0]['sales_date'];
+				$i=0;
+				foreach ($_POST['EbrSales'] as $j=>$sale) {
+					if (isset($_POST['EbrSales'][$j])) {
+						$updatedModels[$j]=$this->loadModel($_POST['EbrSales'][$j]['sale_id']);; // if you had static model only
+						$updatedModels[$j]->attributes=$sale;
+						$str = array();
+						$productEntered[$j] = $updatedModels[$j]->product_id;
+						$clientEntered[$j] = $updatedModels[$j]->client_id;
+						if(isset($models[$j]->product_id)){
+							$str = explode(',',$updatedModels[$j]->product_id);
+						}
+						if(isset($str[0]))
+							$product = $str[0];
+						if(isset($str[1]))
+							$vendor = $str[1];
+						if(isset($vendor))
+							$updatedModels[$j]->vendor_id= Utilities::getVendorId($vendor);
+						if(isset($product))
+							$updatedModels[$j]->product_id=Utilities::getProductId($product);
+						$updatedModels[$j]->invoice_number = $invoice;
+						$updatedModels[$j]->group_id=$group;
+						$updatedModels[$j]->shop_id=$shop;
+						$updatedModels[$j]->client_id=$client;
+						$updatedModels[$j]->sales_date=$date;
+						$valid=$updatedModels[$j]->validate() && $valid;
+						if($valid){
+							if($previoudProduct[$j] == $updatedModels[$j]->product_id && $previousShop[$j] == $updatedModels[$j]->shop_id && $previousVendor[$j] == $updatedModels[$j]->vendor_id){
+								$valid =  EbrStock::model()->checkAndUpdateStock($updatedModels[$j]->product_id, $updatedModels[$j]->shop_id, $updatedModels[$j]->vendor_id, $updatedModels[$j]->quantity,$previousQuantity[$j]);
+								if($valid == 'quantityFail'){
+									//$model->addErrors('Invalid Quantity');
+									$valid2 = false;
+									$updatedModels[$j]->addError('quantity', 'Quantity not available');
+								}
+							}else{
+									
+								$valid =  EbrStock::model()->checkAndLessStock($updatedModels[$j]->product_id, $updatedModels[$j]->shop_id, $updatedModels[$j]->vendor_id, $updatedModels[$j]->quantity);
+								if($valid == 'quantityFail'){
+									//$model->addErrors('Invalid Quantity');
+									$valid2 = false;
+									$updatedModels[$j]->addError('quantity', 'Quantity not available');
+								}else{
+									EbrStock::model()->addStockandLessSale($previoudProduct[$j], $previousShop[$j], $previousVendor[$j], $previousQuantity[$j]);
+								}
+							}
+							
+						}
+						if($valid && $valid2){
+							$validModel[$i]=$updatedModels[$j];
+							$i++;
+						}
+					}
+				}
+				if ($valid && $valid2) {
+					$i=0;
+					$j=count($validModel);
+					while ($i<$j) {
+						$validModel[$i]->save(false);// models have already been validated
+						$i++;
+					}
+					// anything else that you want to do, for example a redirect to admin page
+					Yii::app()->user->setFlash('printInvoice','Sales created succesfully with Invoice Number'.$invoice);
+					$this->redirect(array('invoice/invoiceNumber','invoiceNumber'=>$invoice));
+						
+				}else{
+					foreach ($_POST['EbrSales'] as $j=>$sale) {
+						if (isset($_POST['EbrSales'][$j])) {
+							
+								$updatedModels[$j]->product_id = $productEntered[$j];
+								$updatedModels[$j]->client_id = $clientEntered[$j];
+							
+						}
+					}
+				}
+				
+				$models = $updatedModels;
+			}
+				
+				
+// 			if($model->validate()){
+// 				if($previoudProduct == $model->product_id && $previousShop == $model->shop_id && $previousVendor == $model->vendor_id){
+// 				$valid =  EbrStock::model()->checkAndUpdateStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity,$previousQuantity);
+// 				if($valid == 'quantityFail'){
+// 					//$model->addErrors('Invalid Quantity');
+// 					$model->addError('quantity', 'Quantity not available');
+// 				}else{
+// 					$model->save(false);
+// 					$this->redirect(array('view','id'=>$model->sale_id));
+// 				}
+// 				}else{
+					
+// 					$valid =  EbrStock::model()->checkAndLessStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity);
+// 					if($valid == 'quantityFail'){
+// 						//$model->addErrors('Invalid Quantity');
+// 						$model->addError('quantity', 'Quantity not available');
+// 					}else{
+// 						$model->save(false);
+// 						EbrStock::model()->addStockandLessSale($previoudProduct, $previousShop, $previousVendor, $previousQuantity);
+// 						$this->redirect(array('view','id'=>$model->sale_id));
+// 					}
+// 				}
+// 			}
+			
+				
 		}
-
-		$this->render('update',array(
-			'model'=>$model,
+// 		$product = EbrProducts::model()->findByPk($model->product_id)->product_name;
+// 		$vendor = EbrVendor::model()->findByPk($model->vendor_id)->vendor_name;
+// 		$model->client_id = EbrClient::model()->findByPk($model->client_id)->client_name;
+// 		$model->product_id = $product.','.$vendor;
+// 		$allShops = Utilities::getShopsListForGroup($model->group_id);
+// 		$this->render('update',array(
+// 				'model'=>$model,
+// 				'allShops'=>$allShops,
+// 		));
+		
+		$this->render('multipleEdit',array('items'=>$models,
+				'invoice'=>$invoice,
+				'model'=>$model,
+				'allShops'=>$allShops
 		));
+		
 	}
 
 	/**
@@ -133,7 +279,14 @@ class EbrSalesController extends Controller
 	 */
 	public function actionDelete($id)
 	{
-		$this->loadModel($id)->delete();
+		//$this->loadModel($id)->delete();
+		
+		$model=$this->loadModel($id);
+		
+		$model->sales_deleted = 'Y';
+		
+		$model->save();
+		EbrStock::model()->addDeletedStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity);
 
 		// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 		if(!isset($_GET['ajax']))
@@ -195,6 +348,9 @@ class EbrSalesController extends Controller
 	}
 	
 	
+	/**
+	 * 
+	 */
 	public function actionMultipleCreate() {
 		$models=array();
 		$model=new EbrSales;
@@ -263,30 +419,30 @@ class EbrSalesController extends Controller
 							$str = array();
 							$productEntered[$j] = $models[$j]->product_id;
 							$vendorEntered[$j] = $models[$j]->client_id;
-						if(isset($models[$j]->product_id)){
-							$str = explode(',',$models[$j]->product_id);
-						}
-						if(isset($str[0]))
-						$product = $str[0];
-						if(isset($str[1]))
-						$vendor = $str[1];
-						if(isset($vendor))
-						$models[$j]->vendor_id= Utilities::getVendorId($vendor);
-						if(isset($product))
-						$models[$j]->product_id=Utilities::getProductId($product);
-						$models[$j]->invoice_number = $invoicenumber;
-						$models[$j]->group_id=$group;
-						$models[$j]->shop_id=$shop;
-						$models[$j]->client_id=$client;
-						$models[$j]->sales_date=$date;
-						$valid=$models[$j]->validate() && $valid;
-						if($valid){
-						$valid1 =  EbrStock::model()->checkAndLessStock($models[$j]->product_id, $models[$j]->shop_id, $models[$j]->vendor_id, $models[$j]->quantity);
-						if($valid1 == 'quantityFail'){
-							$valid2 = false;
-							$models[$j]->addError('quantity', 'Quantity not available.');
+							if(isset($models[$j]->product_id)){
+								$str = explode(',',$models[$j]->product_id);
 							}
-						}
+							if(isset($str[0]))
+							$product = $str[0];
+							if(isset($str[1]))
+							$vendor = $str[1];
+							if(isset($vendor))
+							$models[$j]->vendor_id= Utilities::getVendorId($vendor);
+							if(isset($product))
+							$models[$j]->product_id=Utilities::getProductId($product);
+							$models[$j]->invoice_number = $invoicenumber;
+							$models[$j]->group_id=$group;
+							$models[$j]->shop_id=$shop;
+							$models[$j]->client_id=$client;
+							$models[$j]->sales_date=$date;
+							$valid=$models[$j]->validate() && $valid;
+							if($valid){
+							$valid1 =  EbrStock::model()->checkAndLessStock($models[$j]->product_id, $models[$j]->shop_id, $models[$j]->vendor_id, $models[$j]->quantity);
+							if($valid1 == 'quantityFail'){
+								$valid2 = false;
+								$models[$j]->addError('quantity', 'Quantity not available.');
+								}
+							}
 							if($valid && $valid2){
 								$validModel[$i]=$models[$j];
 								$i++;
@@ -323,5 +479,160 @@ class EbrSalesController extends Controller
 				'allShops'=>$allShops
 		));
 	}
+	
+	
+	public function actionEdit(){
+		
+		$invoice = '';
+		$model=new EbrSales;
+		$allShops = array();
+		$models = array();
+		if(isset($_POST['invoice']))
+		{
+			$invoice = $_POST['invoice'];
+			$models = EbrSales::model()->getSalesByInvoice($invoice);
+			$allShops = Utilities::getShopsListForGroup($models[0]->group_id);
+			//$invoicenumber = $models[0]->invoice_number;
+			foreach($models as $j=>$sale){
+				$product = EbrProducts::model()->findByPk($sale->product_id)->product_name;
+				$vendor = EbrVendor::model()->findByPk($sale->vendor_id)->vendor_name;
+				$models[$j]->client_id = EbrClient::model()->findByPk($sale->client_id)->client_name;
+				$models[$j]->product_id = $product.','.$vendor;
+			}
+		}
+		if (isset($_POST['EbrSales'])) {
+			if(isset($_POST['rows']) &&  !empty($_POST['rows']) && empty($_POST['formSubmit'])){
+				$rowsAdd =$_POST['rows'];
+				$i=count($_POST['EbrSales']);
+				$total = $i+$rowsAdd;
+				while($i<$total){
+					$models[$i+1]=new EbrSales;
+					$models[$i+1]->invoice_number = $invoice;
+					$i++;
+				}
+		
+			}else if(isset($_POST['rows']) && !empty($_POST['formSubmit']) ){
+				$valid=true;
+				$valid2=true;
+				$group = $_POST['EbrSales'][0]['group_id'];
+				$shop = $_POST['EbrSales'][0]['shop_id'];
+				$client = '';
+				if($_POST['EbrSales'][0]['client_id'])
+					$client=Utilities::getClient($_POST['EbrSales'][0]['client_id']);
+		
+				$date = $_POST['EbrSales'][0]['sales_date'];
+				$deleted = array();
+				if(!empty($_POST['deletedRows'])){
+					$deleted = explode(',', $_POST['deletedRows']);
+				}
+				$i=0;
+				foreach ($_POST['EbrSales'] as $j=>$sale) {
+					if (isset($_POST['EbrSales'][$j])) {
+						if(!in_array($j,$deleted)){
+							$models[$j]=new EbrSales; // if you had static model only
+							$models[$j]->attributes=$sale;
+							$str = array();
+							$productEntered[$j] = $models[$j]->product_id;
+							$vendorEntered[$j] = $models[$j]->client_id;
+							if(isset($models[$j]->product_id)){
+								$str = explode(',',$models[$j]->product_id);
+							}
+							if(isset($str[0]))
+								$product = $str[0];
+							if(isset($str[1]))
+								$vendor = $str[1];
+							if(isset($vendor))
+								$models[$j]->vendor_id= Utilities::getVendorId($vendor);
+							if(isset($product))
+								$models[$j]->product_id=Utilities::getProductId($product);
+							$models[$j]->invoice_number = $invoice;
+							$models[$j]->group_id=$group;
+							$models[$j]->shop_id=$shop;
+							$models[$j]->client_id=$client;
+							$models[$j]->sales_date=$date;
+							$valid=$models[$j]->validate() && $valid;
+							if($valid){
+								$valid1 =  EbrStock::model()->checkAndLessStock($models[$j]->product_id, $models[$j]->shop_id, $models[$j]->vendor_id, $models[$j]->quantity);
+								if($valid1 == 'quantityFail'){
+									$valid2 = false;
+									$models[$j]->addError('quantity', 'Quantity not available.');
+								}
+							}
+							if($valid && $valid2){
+								$validModel[$i]=$models[$j];
+								$i++;
+							}
+						}
+					}
+				}
+				if ($valid && $valid2) {
+					$i=0;
+					$j=count($validModel);
+					while ($i<$j) {
+						$validModel[$i]->save(false);// models have already been validated
+						$i++;
+					}
+					// anything else that you want to do, for example a redirect to admin page
+					Yii::app()->user->setFlash('printInvoice','Sales created succesfully with Invoice Number'.$invoicenumber);
+					$this->redirect(array('invoice/invoiceNumber','invoiceNumber'=>$invoicenumber));
+		
+				}else{
+					foreach ($_POST['EbrSales'] as $j=>$sale) {
+						if (isset($_POST['EbrSales'][$j])) {
+							if(!in_array($j,$deleted)){
+								$models[$j]->product_id = $productEntered[$j];
+								$models[$j]->client_id = $vendorEntered[$j];
+							}
+						}
+					}
+				}
+			}
+		
+		}
+		$this->render('multipleEdit',array('items'=>$models,
+				'invoice'=>$invoice,
+				'model'=>$model,
+				'allShops'=>$allShops
+		));
+	}
+	
+	/**
+	 *
+	 */
+	public function actionMultipleEdit() {
+		$models=array();
+		$model=new EbrSales;
+		$productEntered = array();
+		$vendorEntered = array();
+		$invoicenumber = $model->getInvoiceNumber();
+		if(isset($_POST['EbrSales'][0]['group_id'])){
+			$allShops = Utilities::getShopsListForGroup($_POST['EbrSales'][0]['group_id']);
+		}else {
+			$allShops = array();
+		}
+		// since you know how many models
+		if (!isset($_POST['EbrSales'])){
+			// since you know how many models
+			$i=0;
+			while($i<1) {
+				$models[$i]=new EbrSales;
+				$models[$i]->invoice_number = $invoicenumber;
+				$i++;
+				// you can also allocate memory for the model with `new Modelname` instead
+				// of assigning the static model
+			}
+		}else{
+			foreach ($_POST['EbrSales'] as $j=>$sale) {
+				if (isset($_POST['EbrSales'][$j])) {
+					$models[$j]=new EbrSales; // if you had static model only
+					$models[$j]->attributes=$sale;
+					$models[$j]->invoice_number = $invoicenumber;
+				}
+			}
+		}
+	
+	
+	
+			}
 	
 }

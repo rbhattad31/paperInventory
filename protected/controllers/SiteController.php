@@ -155,6 +155,7 @@ class SiteController extends Controller
 				$items[$i]['label']=$product->product_name.','.$product->vendor->vendor_name;
 				$items[$i]['value']=$product->product_name.','.$product->vendor->vendor_name;
 				$items[$i]['units_price']=$product->unit_price;
+				$items[$i]['sales_price']=$product->sale_price;
 				$items[$i]['units']=$product->unitLookup->lookup_name;
 			}
 			echo CJSON::encode($items);

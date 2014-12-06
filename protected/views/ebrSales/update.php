@@ -17,5 +17,5 @@ $this->menu=array(
 ?>
 
 <h1>Update EbrSales <?php echo $model->sale_id; ?></h1>
-
-<?php echo $this->renderPartial('_form', array('model'=>$model)); ?>
+<input type="hidden" id="appURL"  value="<?php echo $this->createUrl('site/shops')?>"/>
+<?php echo $this->renderPartial('_form', array('model'=>$model,'allShops'=>$allShops)); ?>
