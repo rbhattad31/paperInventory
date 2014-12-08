@@ -25,5 +25,8 @@ $this->menu=array(
 		'username',
 		'email',
 		'role',
+		'defaultGroup.group_name',
+		'defaultShop.shop_name',
+
 	),
 )); ?>

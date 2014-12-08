@@ -26,11 +26,20 @@
 		<?php echo $form->textField($model,'email',array('size'=>60,'maxlength'=>128)); ?>
 	</div>
 
-	
 
 	<div class="row">
 		<?php echo $form->label($model,'role'); ?>
-		<?php echo $form->dropDownList($model,"role",Utilities::getRolesList(),array('empty' => 'Select a Role')); ?>
+		<?php echo $form->textField($model,'role',array('size'=>60,'maxlength'=>100)); ?>
+	</div>
+
+	<div class="row">
+		<?php echo $form->label($model,'default_group'); ?>
+		<?php echo $form->textField($model,'default_group'); ?>
+	</div>
+
+	<div class="row">
+		<?php echo $form->label($model,'default_shop'); ?>
+		<?php echo $form->textField($model,'default_shop'); ?>
 	</div>
 
 	<div class="row buttons">

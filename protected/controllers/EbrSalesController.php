@@ -327,11 +327,15 @@ class EbrSalesController extends Controller
 		$productEntered = array();
 		$vendorEntered = array();
 		$invoicenumber = $model->getInvoiceNumber();
-		if(isset($_POST['EbrSales'][0]['group_id'])){
-			$allShops = Utilities::getShopsListForGroup($_POST['EbrSales'][0]['group_id']);
-		}else {
-			$allShops = array();
+		$allShops = array();
+		$defaultGroup = Yii::app()->user->getState('defaultGroup');
+		if(isset($defaultGroup))
+			$allShops = Utilities::getShopsListForGroup($defaultGroup);
+		$defaultShop = Yii::app()->user->getState('defaultShop');
+		if(isset($_POST['EbrPurchase'][0]['group_id']) && !isset($allShops)){
+		$allShops = Utilities::getShopsListForGroup($_POST['EbrPurchase'][0]['group_id']);
 		}
+		
 		// since you know how many models
 		if (!isset($_POST['EbrSales'])){
 			// since you know how many models
@@ -339,6 +343,9 @@ class EbrSalesController extends Controller
 			while($i<1) {
 				$models[$i]=new EbrSales;
 				$models[$i]->invoice_number = $invoicenumber;
+				$models[$i]->group_id = $defaultGroup;
+				$models[$i]->shop_id = $defaultShop;
+				
 				$i++;
 				// you can also allocate memory for the model with `new Modelname` instead
 				// of assigning the static model

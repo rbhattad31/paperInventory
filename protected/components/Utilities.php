@@ -5,16 +5,11 @@ class Utilities {
 	static $productsList = array();
 	static $clientsList = array();
 	
-	static function getProductsList() {
-		//$products = Constants::$product_list;
-		$products = EbrProducts::model ()->findAll();
-		for($i = 1; $i <= count ( $products ); $i ++) {
-			$allProducts [$i] ['product_id'] = $i;
-			$allProducts [$i] ['product_name'] = $products [$i];
-		}
-		return CHtml::listData ( $allProducts, 'product_name', 'product_name' );
-	}
 	
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getLookupTypeList() {
 		$lookup = LookupConstants::$lookup_list;
 		for($i = 1; $i <= count ( $lookup ); $i ++) {
@@ -24,6 +19,11 @@ class Utilities {
 		return CHtml::listData ( $lookupList, 'lookup_id', 'lookup_name' );
 	}
 	
+	/**
+	 * 
+	 * @param unknown $id
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getLookupListById($id) {
 		return CHtml::listData(EbrLookup::model()->findAllByAttributes(
 					array(
@@ -31,18 +31,30 @@ class Utilities {
 					)), 'lookup_id','lookup_name');
 	}
 	
-	static function getRolesList() {
-		$roles = Constants::$role_list;
-		for($i = 1; $i <= count ( $roles ); $i ++) {
-			$allRoles[$i] ['role_name'] = $roles[$i];
-		}
-		return CHtml::listData ( $allRoles, 'role_name', 'role_name' );
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
+	static function getRoles() {
+		return CHtml::listData(EbrLookup::model()->findAllByAttributes(
+				array(
+						'lookup_number'=>LookupConstants::$ROLES_LOOKUP_NUMBER
+				)), 'lookup_name','lookup_name');
 	}
 	
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getShopsList() {
 		return CHtml::listData ( EbrShop::model ()->findAll ( "shop_deleted='N'" ), 'shop_id', 'shop_name' );
 	}
 	
+	/**
+	 * 
+	 * @param unknown $groupId
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getShopsListForGroup($groupId) {
 		return CHtml::listData(EbrShop::model()->findAllByAttributes(
 					array(
@@ -51,13 +63,26 @@ class Utilities {
 					)), 'shop_id','shop_name');
 	}
 	
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getGroupsList(){
 		return CHtml::listData ( EbrGroup::model ()->findAll ( "group_deleted='N'" ), 'group_id', 'group_name' );
 	}
 	
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getVendorsList(){
 		return CHtml::listData ( EbrVendor::model ()->findAll ( "vendor_deleted='N'" ), 'vendor_id', 'vendor_name' );
 	}
+	
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getCriteriaForProductsList() {
 		$criteria_list = Constants::$criteria_list_products;
 		for($i = 1; $i <= count ( $criteria_list ); $i ++) {
@@ -67,6 +92,10 @@ class Utilities {
 		return CHtml::listData ( $criteria, 'criteria', 'criteria' );
 	}
 	
+	/**
+	 * 
+	 * @return Ambigous <mixed, multitype:unknown mixed , multitype:unknown , string, unknown>
+	 */
 	static function getCriteriaForSalesList() {
 		$criteria_list = Constants::$criteria_list_sales;
 		for($i = 1; $i <= count ( $criteria_list ); $i ++) {
@@ -76,7 +105,11 @@ class Utilities {
 		return CHtml::listData ( $criteria, 'criteria', 'criteria' );
 	}
 	
-		
+	/**
+	 * 
+	 * @param unknown $vendorName
+	 * @return multitype:|string
+	 */	
 	static function getVendorId($vendorName){
 		if(empty(self::$vendorsList)){
 		$allVendors= EbrVendor::model()->findAll();
@@ -90,6 +123,11 @@ class Utilities {
 		return '';
 	}
 	
+	/**
+	 * 
+	 * @param unknown $clientName
+	 * @return multitype:|string
+	 */
 	static function getClient($clientName){
 		if(empty(self::$clientsList)){
 			$allClients= EbrClient::model()->findAll();
@@ -103,6 +141,11 @@ class Utilities {
 			return '';
 	}
 	
+	/**
+	 * 
+	 * @param unknown $productName
+	 * @return multitype:|string
+	 */
 	static function getProductId($productName){
 		if(empty(self::$productsList)){
 			$allPros= EbrProducts::model()->findAll();

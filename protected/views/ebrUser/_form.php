@@ -23,8 +23,7 @@
 
 	<div class="row">
 		<?php echo $form->labelEx($model,'password'); ?>
-		<?php echo $form->passwordField($model,'password',array('size'=>60,'maxlength'=>128,
-																'disabled'=>true)); ?>
+		<?php echo $form->passwordField($model,'password',array('size'=>60,'maxlength'=>128)); ?>
 		<?php echo $form->error($model,'password'); ?>
 	</div>
 
@@ -34,11 +33,23 @@
 		<?php echo $form->error($model,'email'); ?>
 	</div>
 
-	
+
 	<div class="row">
 		<?php echo $form->labelEx($model,'role'); ?>
-		<?php echo $form->dropDownList($model,"role",Utilities::getRolesList(),array('empty' => 'Select a Role')); ?>
+		<?php echo $form->dropDownList($model,'role',Utilities::getRoles(),array('empty' => 'Select a Role'));  ?>
 		<?php echo $form->error($model,'role'); ?>
+	</div>
+
+	<div class="row">
+		<?php echo $form->labelEx($model,'default_group'); ?>
+		<?php echo $form->dropDownList($model,'default_group',Utilities::getGroupsList(),array('empty' => 'Select a Group'));  ?>
+		<?php echo $form->error($model,'default_group'); ?>
+	</div>
+
+	<div class="row">
+		<?php echo $form->labelEx($model,'default_shop'); ?>
+		<?php echo $form->dropDownList($model,'default_shop',$allShops,array('empty' => 'Select a Shop'));  ?>
+		<?php echo $form->error($model,'default_shop'); ?>
 	</div>
 
 	<div class="row buttons">

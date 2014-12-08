@@ -282,35 +282,7 @@ class EbrPurchaseController extends Controller
 				'model'=>$model,
 				'allShops'=>$allShops
 		));
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
-// 		$model->product_id = $model->product->product_name.','.$model->vendor->vendor_name;
-// 		if(isset($_POST['EbrPurchase']))
-// 		{
-// 			$model->attributes=$_POST['EbrPurchase'];
-// 			$allShops = Utilities::getShopsListForGroup($model->group_id);
-// 			$str = array();
-				
-// 			if(!empty($_POST['EbrPurchase']['product_id'])){
-// 				$str = explode(',', $_POST['EbrPurchase']['product_id']);
-// 			}
-// 			$product = $str[0];
-// 			$vendor = $str[1];
-// 			$model->vendor_id= Utilities::getVendorId($vendor);
-// 			$model->product_id=Utilities::getProductId($product);
-// 			if($model->save()){
-// 				//EbrStock::model()->updateStock($model->product_id, $model->shop_id, $model->vendor_id, $model->quantity);
-// 				$this->redirect(array('view','id'=>$model->purchase_id));
-// 			}
-// 		}else{
-// 		$allShops = Utilities::getShopsListForGroup($model->group_id);
-// 		}
-			
-// 		$this->render('update',array(
-// 			'model'=>$model,
-// 				'allShops'=>$allShops,
-				
-// 		));
+	
 	}
 
 	/**
@@ -388,20 +360,28 @@ class EbrPurchaseController extends Controller
 		));
 	}
 	
+	/**
+	 * 
+	 */
 	public function actionMultipleCreate() {
 		$models=array();
 		$model=new EbrPurchase;
 		$productEntered = array();
-		if(isset($_POST['EbrPurchase'][0]['group_id'])){
+		$allShops = array();
+		$defaultGroup = Yii::app()->user->getState('defaultGroup');
+		if(isset($defaultGroup))
+			$allShops = Utilities::getShopsListForGroup($defaultGroup);
+		$defaultShop = Yii::app()->user->getState('defaultShop');
+		if(isset($_POST['EbrPurchase'][0]['group_id']) && !isset($allShops)){
 		$allShops = Utilities::getShopsListForGroup($_POST['EbrPurchase'][0]['group_id']);
-		}else {
-			$allShops = array();
 		}
 		// since you know how many models
 		if (!isset($_POST['EbrPurchase'])){
 		$i=0;
-		while($i<1) {
+		while($i<Constants::$purchase_rows) {
 			$models[$i]=new EbrPurchase;
+			$models[$i]->group_id = $defaultGroup;
+			$models[$i]->shop_id = $defaultShop;
 			$i++;
 			}
 		}else{

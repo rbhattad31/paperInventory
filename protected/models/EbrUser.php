@@ -13,6 +13,12 @@
  * @property string $updated_date
  * @property string $updated_by
  * @property string $role
+ * @property integer $default_group
+ * @property integer $default_shop
+ *
+ * The followings are the available model relations:
+ * @property EbrGroup $defaultGroup
+ * @property EbrShop $defaultShop
  */
 class EbrUser extends CActiveRecord
 {
@@ -43,6 +49,7 @@ class EbrUser extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('username, password, email, role', 'required'),
+				array('default_group, default_shop', 'numerical', 'integerOnly'=>true),
 			array('username, password, email', 'length', 'max'=>128),
 			array('created_date, created_by, updated_date, updated_by, role', 'length', 'max'=>100),
 			// The following rule is used by search().
@@ -59,9 +66,10 @@ class EbrUser extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'defaultGroup' => array(self::BELONGS_TO, 'EbrGroup', 'default_group'),
+			'defaultShop' => array(self::BELONGS_TO, 'EbrShop', 'default_shop'),
 		);
 	}
-
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
@@ -77,6 +85,8 @@ class EbrUser extends CActiveRecord
 			'updated_date' => 'Updated Date',
 			'updated_by' => 'Updated By',
 			'role' => 'Role',
+				'default_group' => 'Default Group',
+				'default_shop' => 'Default Shop',
 		);
 	}
 
@@ -100,9 +110,37 @@ class EbrUser extends CActiveRecord
 		$criteria->compare('updated_date',$this->updated_date,true);
 		$criteria->compare('updated_by',$this->updated_by,true);
 		$criteria->compare('role',$this->role,true);
+		$criteria->compare('default_group',$this->default_group);
+		$criteria->compare('default_shop',$this->default_shop);
+		
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
 	}
+	
+	/**
+	 * This is invoked before the record is saved.
+	 * @return boolean whether the record should be saved.
+	 */
+	protected function beforeSave()
+	{
+		if(parent::beforeSave())
+		{
+			if($this->isNewRecord)
+			{
+				$this->created_date=date('Y-m-d H:i:s',time());
+				$this->created_by=Yii::app()->user->name;
+			}
+			else{
+				$this->updated_date=date('Y-m-d H:i:s',time());
+				$this->updated_by=Yii::app()->user->name;
+			}
+	
+			return true;
+		}
+		else
+			return false;
+	}
+	
 }

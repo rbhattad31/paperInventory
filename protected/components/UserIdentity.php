@@ -31,6 +31,8 @@ class UserIdentity extends CUserIdentity
 		else
 		{
 			$this->setState('role', $record->role);
+			$this->setState('defaultGroup', $record->default_group);
+			$this->setState('defaultShop', $record->default_shop);
 			$this->errorCode=self::ERROR_NONE;
 		}
 		return !$this->errorCode;

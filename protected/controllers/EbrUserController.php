@@ -64,6 +64,7 @@ class EbrUserController extends Controller
 	{
 		$model=new EbrUser;
 
+		$allShops= array();
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 		
@@ -87,6 +88,7 @@ class EbrUserController extends Controller
 
 		$this->render('create',array(
 			'model'=>$model,
+			'allShops'=>$allShops,
 		));
 	}
 
@@ -99,6 +101,7 @@ class EbrUserController extends Controller
 	{
 		$model=$this->loadModel($id);
 		$oldRole = $model->role;
+		
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
@@ -106,8 +109,8 @@ class EbrUserController extends Controller
 		{
 			$auth=Yii::app()->authManager;
 			$model->attributes=$_POST['EbrUser'];
-			
-			if($model->update(array($model->role,$model->username,$model->email))){
+			$model->password = $this->cryptPassword($model->password);
+			if($model->save()){
 				if(!($model->role == $oldRole)){
 					$userRole = Authassignment::model()->findAllByAttributes(
 					array(
@@ -123,9 +126,14 @@ class EbrUserController extends Controller
 			}
 				
 		}
-
+		if(isset($model->default_group)){
+			$allShops = Utilities::getShopsListForGroup($model->default_group);
+		}else
+			$allShops = array();
+		
 		$this->render('update',array(
 			'model'=>$model,
+			'allShops'=>$allShops,
 		));
 	}
 

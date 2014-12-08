@@ -23,6 +23,12 @@
 	<?php echo CHtml::encode($data->role); ?>
 	<br />
 
-	
+	<b><?php echo CHtml::encode($data->getAttributeLabel('default_group')); ?>:</b>
+	<?php echo CHtml::encode($data->default_group); ?>
+	<br />
 
-</div>
+	<b><?php echo CHtml::encode($data->getAttributeLabel('default_shop')); ?>:</b>
+	<?php echo CHtml::encode($data->default_shop); ?>
+	<br />
+
+	</div>
