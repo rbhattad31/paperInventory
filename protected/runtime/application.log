@@ -5201,3 +5201,17 @@ Stack trace:
 #10 D:\xampp\htdocs\paperInventory\protected\framework\base\CApplication.php(169): CWebApplication->processRequest()
 #11 D:\xampp\htdocs\paperInventory\index.php(30): CWebApplication->run()
 REQUEST_URI=/paperInventory/index.php/reports/dataTableSales
+2014/12/09 14:28:45 [error] [php] Undefined variable: model (D:\xampp\htdocs\paperInventory\protected\views\site\index.php:26)
+Stack trace:
+#0 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(3655): SiteController->renderFile()
+#1 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(3623): SiteController->renderPartial()
+#2 D:\xampp\htdocs\paperInventory\protected\controllers\SiteController.php(32): SiteController->render()
+#3 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(3891): SiteController->actionIndex()
+#4 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(3403): CInlineAction->runWithParams()
+#5 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(3388): SiteController->runAction()
+#6 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(3378): SiteController->runActionWithFilters()
+#7 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(1725): SiteController->run()
+#8 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(1645): CWebApplication->runController()
+#9 D:\xampp\htdocs\paperInventory\protected\framework\yiilite.php(1170): CWebApplication->processRequest()
+#10 D:\xampp\htdocs\paperInventory\index.php(30): CWebApplication->run()
+REQUEST_URI=/paperInventory/index.php
