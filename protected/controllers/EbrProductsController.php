@@ -86,7 +86,7 @@ class EbrProductsController extends Controller
 	public function actionUpdate($id)
 	{
 		$model=$this->loadModel($id);
-
+		$edit = true;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
@@ -101,6 +101,7 @@ class EbrProductsController extends Controller
 
 		$this->render('update',array(
 			'model'=>$model,
+			'edit'=>$edit,
 		));
 	}
 

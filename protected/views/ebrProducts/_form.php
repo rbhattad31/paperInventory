@@ -33,12 +33,21 @@
 		<?php echo $form->error($model,'product_description'); ?>
 	</div>
 
+	<?php if(!isset($edit)){?>
 	<div class="row">
 		<?php echo $form->labelEx($model,'unit_lookup_id'); ?>
 		<?php echo $form->dropDownList($model,'unit_lookup_id',Utilities::getLookupListById(LookupConstants::$UNITS_LOOKUP_NUMBER),array('empty' => 'Select a Unit'));  ?>
 		<?php echo $form->error($model,'unit_lookup_id'); ?>
 	</div>
+	<?php }else {?>
+	<div class="row">
+		<?php echo $form->labelEx($model,'unit_lookup_id'); ?>
+		<?php echo $form->dropDownList($model,'unit_lookup_id',Utilities::getLookupListById(LookupConstants::$UNITS_LOOKUP_NUMBER),array('empty' => 'Select a Unit',
+																																			'disabled'=>'true'));  ?>
+		<?php echo $form->error($model,'unit_lookup_id'); ?>
+	</div>
 	
+	<?php }?>
 	<div class="row">
 		<?php echo $form->labelEx($model,'unit_price'); ?>
 		<?php echo $form->textField($model,'unit_price',array('size'=>10,'maxlength'=>200)); ?>

@@ -120,24 +120,20 @@
          <li class='last'><a href='<?php echo $this->createUrl('ebrSales/admin')?>'><span>Search Sales</span></a></li>
       </ul>
    </li>
-   <li class='has-sub'><a href='#'><span>Stock</span></a>
-   <ul>       
-         <li class='last'><a href='<?php echo $this->createUrl('stock/search')?>'><span>Search Stocks</span></a></li>
-      </ul>
-   </li>
-   <li class='has-sub'><a href='#'><span>Invoices</span></a>
-   <ul>       
+    <li class='has-sub'><a href='#'><span>Search</span></a>
+   <ul>
+         
+        <li><a href='<?php echo $this->createUrl('stock/search')?>'><span>Search Stocks</span></a></li>
          <li class='last'><a href='<?php echo $this->createUrl('invoice/search')?>'><span>Search Invoice</span></a></li>
          
       </ul>
    </li>
+   
   
    <li class='has-sub'><a href='#'><span>Reports</span></a>
    
    <ul>
-         <li><a href='<?php echo $this->createUrl('ebrGroup/reports')?>'><span>Groups</span></a></li>
-          <li><a href='<?php echo $this->createUrl('ebrVendor/reports')?>'><span>Vendors</span></a></li>
-           <li><a href='<?php echo $this->createUrl('ebrShop/reports')?>'><span>Shops</span></a></li>
+         
            <li class='has-sub'><a href='#'><span>Purchases</span></a>
            <ul>
             <li><a href='<?php echo $this->createUrl('reports/allPurchases')?>'><span>Complete Report</span></a></li>

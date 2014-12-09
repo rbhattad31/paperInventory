@@ -70,8 +70,26 @@ class EbrLookupController extends Controller
 		if(isset($_POST['EbrLookup']))
 		{
 			$model->attributes=$_POST['EbrLookup'];
-			if($model->save())
+			
+			
+			if($model->validate()){
+				$roleExists = false;
+				if($model->lookup_number == LookupConstants::$ROLES_LOOKUP_NUMBER){
+				 $roles = Authitem::model()->findAll();
+				 foreach ($roles as $j=>$role){
+				 	if($role->name == $model->lookup_name){
+				 		$roleExists = true;
+				 		break;
+				 	}
+				 }
+				 if(!$roleExists){
+				 	$auth=Yii::app()->authManager;
+				 	$role=$auth->createRole($model->lookup_name);
+				 }
+				}
+				$model->save(false);
 				$this->redirect(array('view','id'=>$model->lookup_id));
+			}
 		}
 
 		$this->render('create',array(
